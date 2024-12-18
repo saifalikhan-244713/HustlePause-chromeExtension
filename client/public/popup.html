@@ -1,12 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pause Controller</title>
+  <style>
+    /* Center the content in the body */
+    body {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #ffffff; /* Light gray background */
+      padding: 10px auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    /* Style for the button */
+    #toggle-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff; /* Blue background */
+      color: #fff; /* White text */
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #toggle-button:hover {
+      background-color: #0056b3; /* Darker blue on hover */
+    }
+
+    #toggle-button:active {
+      background-color: #003f7f; /* Even darker blue when active */
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Pause Insta & YouTube</h1>
-  <p>The extension is running...</p>
+  <h1>hustlePause</h1>
+  <p>Have a productive day :)</p>  <button id="toggle-button">Start</button>
+  <script src="popup.js"></script>
 </body>
+
 </html>

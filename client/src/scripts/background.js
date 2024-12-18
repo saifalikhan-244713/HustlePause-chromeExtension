@@ -4,43 +4,59 @@ function logWithTimestamp(message) {
   console.log(`[${timestamp}] ${message}`);
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-  logWithTimestamp("Extension installed. Clearing existing alarms and creating new alarm.");
-  chrome.alarms.clearAll(() => {
-    chrome.alarms.create("pauseCycle", { periodInMinutes: 1 });
-  });
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "pauseCycle") {
-    logWithTimestamp("Alarm triggered: pauseCycle");
-    chrome.tabs.query(
-      { url: ["*://*.instagram.com/*", "*://*.youtube.com/*"] }, // Removed `active` filter
-      (tabs) => {
-        if (tabs.length === 0) {
-          logWithTimestamp("No matching tabs found. Skipping.");
-          return;
-        }
-        tabs.forEach((tab) => {
-          logWithTimestamp(`Sending pauseContent script to tab ID: ${tab.id}`);
-          chrome.scripting.executeScript(
-            {
-              target: { tabId: tab.id },
-              func: pauseContent,
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                logWithTimestamp(`Error executing script: ${chrome.runtime.lastError.message}`);
-              } else {
-                logWithTimestamp(`pauseContent script executed successfully for tab ID: ${tab.id}`);
-              }
-            }
-          );
-        });
-      }
-    );
+// Listen to toggle messages from popup
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === 'START') {
+    logWithTimestamp('Starting the extension.');
+    startAlarms();
+  } else if (message.action === 'STOP') {
+    logWithTimestamp('Stopping the extension.');
+    stopAlarms();
   }
 });
+
+// Function to start alarms
+function startAlarms() {
+  chrome.alarms.clearAll(() => {
+    chrome.alarms.create('pauseCycle', { periodInMinutes: 1 });
+    logWithTimestamp('Alarm created.');
+  });
+}
+
+// Function to stop alarms
+function stopAlarms() {
+  chrome.alarms.clearAll(() => {
+    logWithTimestamp('All alarms cleared.');
+  });
+}
+
+// Handle alarm events
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'pauseCycle') {
+    logWithTimestamp('Alarm triggered: pauseCycle');
+
+    chrome.storage.local.get('isRunning', ({ isRunning }) => {
+      if (!isRunning) {
+        logWithTimestamp('Extension is stopped. Ignoring alarm.');
+        return;
+      }
+
+      chrome.tabs.query(
+        { url: ['*://*.instagram.com/*', '*://*.youtube.com/*'] },
+        (tabs) => {
+          tabs.forEach((tab) => {
+            chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              func: pauseContent,
+            });
+          });
+        }
+      );
+    });
+  }
+});
+
+
 
 function pauseContent() {
   const pauseDuration = 60000; // 1 minute
