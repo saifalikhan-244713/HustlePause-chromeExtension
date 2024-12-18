@@ -1,53 +1,75 @@
 /* global chrome */
+
 function logWithTimestamp(message) {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] ${message}`);
 }
 
-// Listen to toggle messages from popup
+// Listen to messages from the popup
 chrome.runtime.onMessage.addListener((message) => {
-  if (message.action === 'START') {
-    logWithTimestamp('Starting the extension.');
-    startAlarms();
-  } else if (message.action === 'STOP') {
-    logWithTimestamp('Stopping the extension.');
+  if (message.action === "START") {
+    logWithTimestamp("Starting the extension.");
+    const { interval, duration } = message.data;
+    startAlarms(interval, duration);
+  } else if (message.action === "STOP") {
+    logWithTimestamp("Stopping the extension.");
     stopAlarms();
   }
 });
 
 // Function to start alarms
-function startAlarms() {
-  chrome.alarms.clearAll(() => {
-    chrome.alarms.create('pauseCycle', { periodInMinutes: 1 });
-    logWithTimestamp('Alarm created.');
+function startAlarms(interval, duration) {
+  chrome.storage.local.set({ interval, duration, isRunning: true }, () => {
+    chrome.alarms.clearAll(() => {
+      chrome.alarms.create("pauseCycle", { periodInMinutes: interval });
+      logWithTimestamp(`Alarm created with an interval of ${interval} minutes.`);
+    });
   });
 }
 
 // Function to stop alarms
 function stopAlarms() {
-  chrome.alarms.clearAll(() => {
-    logWithTimestamp('All alarms cleared.');
+  chrome.storage.local.set({ isRunning: false }, () => {
+    chrome.alarms.clearAll(() => {
+      logWithTimestamp("All alarms cleared.");
+    });
   });
 }
+// Listen to messages from the popup
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "START") {
+    logWithTimestamp("Starting the extension.");
+    const { interval, duration } = message.data || {}; // Fallback to an empty object
+    if (interval && duration) {
+      startAlarms(interval, duration);
+    } else {
+      logWithTimestamp("Invalid data received for START action.");
+    }
+  } else if (message.action === "STOP") {
+    logWithTimestamp("Stopping the extension.");
+    stopAlarms();
+  }
+});
 
 // Handle alarm events
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'pauseCycle') {
-    logWithTimestamp('Alarm triggered: pauseCycle');
+  if (alarm.name === "pauseCycle") {
+    logWithTimestamp("Alarm triggered: pauseCycle");
 
-    chrome.storage.local.get('isRunning', ({ isRunning }) => {
+    chrome.storage.local.get(["isRunning", "duration"], ({ isRunning, duration }) => {
       if (!isRunning) {
-        logWithTimestamp('Extension is stopped. Ignoring alarm.');
+        logWithTimestamp("Extension is stopped. Ignoring alarm.");
         return;
       }
 
       chrome.tabs.query(
-        { url: ['*://*.instagram.com/*', '*://*.youtube.com/*'] },
+        { url: ["*://*.instagram.com/*", "*://*.youtube.com/*"] },
         (tabs) => {
           tabs.forEach((tab) => {
             chrome.scripting.executeScript({
               target: { tabId: tab.id },
               func: pauseContent,
+              args: [duration],
             });
           });
         }
@@ -56,10 +78,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-
-
-function pauseContent() {
-  const pauseDuration = 60000; // 1 minute
+// Function to pause content
+function pauseContent(duration) {
+  const pauseDuration = duration * 60 * 1000; // Convert minutes to milliseconds
   const overlayId = "pause-overlay";
   const hostname = window.location.hostname;
 
@@ -83,27 +104,21 @@ function pauseContent() {
   overlay.style.justifyContent = "center";
   overlay.style.alignItems = "center";
   overlay.style.zIndex = "9999";
-  overlay.innerText = "Take a break for 1 minute!";
+  overlay.innerText = `Take a break for ${duration} minute(s)!`;
   document.body.appendChild(overlay);
-
-  console.log(`[${new Date().toISOString()}] Overlay displayed.`);
 
   if (hostname.includes("youtube.com")) {
     const videos = document.querySelectorAll("video");
     videos.forEach((video) => video.pause());
-    console.log(`[${new Date().toISOString()}] Paused all videos on YouTube.`);
     setTimeout(() => {
       videos.forEach((video) => video.play());
-      console.log(`[${new Date().toISOString()}] Resumed all videos on YouTube.`);
     }, pauseDuration);
   }
 
   if (hostname.includes("instagram.com")) {
     document.body.style.overflow = "hidden";
-    console.log(`[${new Date().toISOString()}] Disabled scrolling on Instagram.`);
     setTimeout(() => {
       document.body.style.overflow = "";
-      console.log(`[${new Date().toISOString()}] Re-enabled scrolling on Instagram.`);
     }, pauseDuration);
   }
 
@@ -111,7 +126,6 @@ function pauseContent() {
     const overlay = document.getElementById(overlayId);
     if (overlay) {
       document.body.removeChild(overlay);
-      console.log(`[${new Date().toISOString()}] Overlay removed.`);
     }
   }, pauseDuration);
 }

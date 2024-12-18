@@ -3,35 +3,25 @@
   "name": "Pause Insta & YouTube",
   "version": "1.0",
   "description": "Pause Instagram and YouTube for 1 minute every 5 minutes.",
-  "permissions": ["activeTab", "scripting", "alarms", "storage", "tabs"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "alarms",
+    "storage",
+    "tabs"
+  ],
   "background": {
     "service_worker": "assets/background.js"
   },
   "content_scripts": [
     {
       "matches": [
-        "https://www.instagram.com/*",
-        "https://www.instagram.com/stories/*",
-        "https://www.instagram.com/reels/*",
-        "https://www.instagram.com/explore/*",
-        "https://www.instagram.com/p/*",
-        "https://www.instagram.com/tv/*",
-        "https://www.instagram.com/direct/*",
-        "https://www.instagram.com/accounts/*",
-        "https://www.youtube.com/*",
-        "https://www.youtube.com/watch?v=*",
-        "https://www.youtube.com/shorts/*",
-        "https://www.youtube.com/playlist?list=WL",
-        "https://www.youtube.com/feed/subscriptions",
-        "https://www.youtube.com/feed/library",
-        "https://www.youtube.com/feed/history",
-        "https://www.youtube.com/channel/*",
-        "https://www.youtube.com/user/*",
-        "https://www.youtube.com/c/*",
-        "https://www.youtube.com/results?search_query=*",
-        "https://www.youtube.com/live/*"
+        "*://*.instagram.com/*",
+        "*://*.youtube.com/*"
       ],
-      "js": ["assets/content.js"]
+      "js": [
+        "assets/content.js"
+      ]
     }
   ],
   "action": {

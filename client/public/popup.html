@@ -6,18 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pause Controller</title>
   <style>
-    /* Center the content in the body */
     body {
       width: 300px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      height: 400px;
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #ffffff; /* Light gray background */
-      padding: 10px auto;
+      background-color: #ffffff;
+      padding: 10px;
     }
 
     h1 {
@@ -25,17 +24,22 @@
       margin-bottom: 20px;
     }
 
-    p {
-      color: #555;
-      margin-bottom: 20px;
+    label {
+      font-size: 14px;
+      margin: 5px 0;
     }
 
-    /* Style for the button */
+    input {
+      margin-bottom: 10px;
+      padding: 5px;
+      width: 80%;
+    }
+
     #toggle-button {
       padding: 10px 20px;
       font-size: 16px;
-      background-color: #007bff; /* Blue background */
-      color: #fff; /* White text */
+      background-color: #007bff;
+      color: #fff;
       border: none;
       border-radius: 5px;
       cursor: pointer;
@@ -43,18 +47,24 @@
     }
 
     #toggle-button:hover {
-      background-color: #0056b3; /* Darker blue on hover */
+      background-color: #0056b3;
     }
 
     #toggle-button:active {
-      background-color: #003f7f; /* Even darker blue when active */
+      background-color: #003f7f;
     }
   </style>
 </head>
 
 <body>
   <h1>hustlePause</h1>
-  <p>Have a productive day :)</p>  <button id="toggle-button">Start</button>
+  <label for="interval">Break Interval (minutes):</label>
+  <input type="number" id="interval" placeholder="Enter interval in minutes" />
+
+  <label for="duration">Break Duration (minutes):</label>
+  <input type="number" id="duration" placeholder="Enter duration in minutes" />
+
+  <button id="toggle-button">Start</button>
   <script src="popup.js"></script>
 </body>
 
